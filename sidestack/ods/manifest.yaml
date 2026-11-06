@@ -1,0 +1,26 @@
+# DRAFT: ODS Applications entry for SideStack Voice Studio. Install only per ods/APPLY.md (lane VS-08).
+# Pattern copied from the working SideStack Meetings / DeepSeek Harness entries (ods.services.v1).
+schema_version: ods.services.v1
+
+compatibility:
+  ods_min: "2.0.0"
+
+service:
+  id: sidestack-voice-studio
+  name: SideStack Voice Studio
+  aliases: []
+  container_name: ""
+  # Runs natively on Windows (Start-VoiceStudio-ODS.ps1, lane VS-07), bound to 127.0.0.1:3900.
+  # The ODS dashboard container reaches Windows loopback through host.docker.internal.
+  # Voice Studio uses ODS through the local model relay (:4007) and ODS Whisper (:9000).
+  default_host: host.docker.internal
+  port: 3900
+  # Public, unauthenticated liveness route of the VoiceStudio backend.
+  health: /health
+  external_port_default: 3900
+  ui_path: /
+  # Not Docker and not host-systemd: ODS lists and health-checks it, never starts or stops it.
+  type: windows-host
+  gpu_backends: [all]
+  category: optional
+  depends_on: []
