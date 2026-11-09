@@ -10,7 +10,7 @@
   - **real run approval** for Part B: start Voice Studio twice and send a few requests, with no model downloads (KittenTTS is already cached; OmniVoice is refused before anything loads);
   - Part C: the **user** accepts OmniVoice's licence in the app, plus **real run approval** for its weights download and a GPU run with ODS's LLM stopped.
 - **Depends on:** VS-07 (launcher), VS-16
-- **Status:** ready
+- **Status:** verified (Part A; Part B PASS; Part C PASS, 2026-11-08)
 
 ## Goal
 
@@ -400,3 +400,23 @@ The user gave real run approval. ODS's LLM stayed loaded (GPU memory used was 24
 - **Default engine:** upstream's default engine is OmniVoice. In commercial-only mode a fresh install shows "not ready" and offers to download a model the mode will refuse. A SideStack default of a commercial engine (VoxCPM2 or KittenTTS) would fix this.
 - **Downloads:** downloads are not licence-gated, upstream or here.
 - **Cosmetic:** with two models, the refusal reads "… (unknown) is not licensed"; it should say "are".
+
+## Part C results (user + Operator, 2026-11-08)
+
+The user asked for Part C and gave real run approval, including stopping and restarting ODS's LLM. Voice Studio ran from the worktree with `-AllowNonCommercial`.
+
+1. **Licences.** OmniVoice needs two acceptances, not one:
+   - `k2-fsa/OmniVoice` (CC-BY-NC, noncommercial): accepted by the user in the app's licence dialog.
+   - `eustlb/higgs-audio-v2-tokenizer` (NOASSERTION, category unknown): the first generation was refused with 403 `model_licence_required` for this repo, before any download. The user reviewed the dialog ("Licence not identified"; commercial use and redistribution "Not verified") and accepted it, asking the Operator in chat to tick the box on their behalf.
+2. **Generation**, with ODS's LLM stopped (GPU memory used 25,183 MiB before and 3,260 MiB after the stop):
+   - `POST /generate`, `engine=omnivoice`, synthetic English sentence → **200** in **42.5 s**, including the first download and model load. The output is a 164,154-byte WAV.
+   - **Download:** 3,267,443,482 bytes (3.27 GB) in 15 files: `k2-fsa/OmniVoice` 2,461,775,077 bytes and the tokenizer 805,668,405 bytes.
+   - **Peak GPU memory used:** 5,516 MiB for the whole card, so about 2.3 GB above the idle baseline.
+3. **ODS's LLM restarted:** healthy after 15 s, `restarts=0`. With OmniVoice still loaded, the card showed 27,381 MiB used and 4,810 MiB free.
+4. **Default profile restored:** `-Stop`, then a start without the switch. `engine=omnivoice` → **403** `commercial_only_mode` in 0.05 s, listing both repos. The acceptances stay recorded; the mode refuses regardless.
+
+**Verdict:** PASS.
+
+**Findings (not fixed here):**
+- Step 1 above names only OmniVoice's licence. The tokenizer needs its own acceptance, and its licence is not declared.
+- The measured VRAM (about 2.3 GB) is well under the 6 GB floor used to plan this run, so the floor is conservative for this sentence length.
