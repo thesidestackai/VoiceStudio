@@ -57,3 +57,4 @@ git remote set-url --push upstream DISABLED-no-push-to-upstream
 | Date | Upstream commits | Files | Conflicts | Result |
 |---|---|---|---|---|
 | 2026-11-06 | 53 (to `6bb3fbc5e`) | 54, no overlap, no deps/frontend | none | merge `1bcc059d9`; SideStack tests 40 passed; full suite adds no real failures (see VS-12) |
+| 2026-11-08 | 489 measured (to `73cba3d6d`), **deferred** | 891 | 3 dry-merge conflicts (`setup/models.py`, `model-catalogue-query.ts`, `engine-family-list.tsx`) | not merged. Upstream main is 0.5.8-beta.2 with torch 2.8 → 2.10 and vitest 4 → 5. The user chose to wait for the 0.5.8 release (or the monthly date). |
