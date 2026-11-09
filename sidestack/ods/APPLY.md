@@ -77,3 +77,22 @@ bun run build:web
 ```
 
 Restart Voice Studio (`Start-VoiceStudio-ODS.ps1 -Stop`, then click the ODS link) so it serves the new build. Backend changes also need this restart. No rebuild is needed for them.
+
+## Operations notes (lane VS-30)
+
+**Restart order on a shared GPU.** VoxCPM2's sidecar stays loaded for 15 minutes after its last use (about 7 GB). Restarting ODS's LLM while it is loaded leaves llama-server short of GPU memory, and its load stalls.
+1. Run `Start-VoiceStudio-ODS.ps1 -Stop`.
+2. Start ODS's LLM and wait until it is healthy.
+3. Click the ODS link to start Voice Studio again.
+
+Measured in VS-29: 39 s to healthy in this order, against a stall of more than 3 minutes the other way.
+
+**Cold ODS Whisper.**
+- ODS Whisper unloads its model after 5 idle minutes, and reloading it took about 103 s.
+- The SideStack profile sets `OMNIVOICE_TRANSCRIBE_CHUNK_TIMEOUT_S=300`, so the first dub transcription after an idle spell still finishes. Upstream's default is 120 s.
+- Dictation and the whole-file ASR path already allow 300 s (`OMNIVOICE_ASR_TRANSCRIBE_TIMEOUT_S`).
+
+**Dub timing for API callers.**
+- `POST /dub/generate` defaults to `timing_strategy: "concise"`. That fails the whole dub when any translated line runs past its slot, which is common from English to Spanish or Khmer.
+- Send `"timing_strategy": "smart_fit"` instead. It stretches lines to fit while keeping the pitch (VS-29).
+- The web UI's default is `strict_slot`, so this only affects direct API, MCP and script callers.

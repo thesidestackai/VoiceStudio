@@ -143,6 +143,8 @@ def test_l8_profile_content():
     assert profile["TRANSLATE_PROVIDER"] == "openai"
     assert "OMNIVOICE_SERVER_MODE" not in profile
     assert profile["OMNIVOICE_ENV_FILE"].startswith(profile["OMNIVOICE_DATA_DIR"])
+    # VS-30: room for a cold ODS Whisper model reload (about 103 s measured in VS-29).
+    assert float(profile["OMNIVOICE_TRANSCRIBE_CHUNK_TIMEOUT_S"]) >= 300
 
 
 # ── L9: dub translation resolves to ODS (any OS) ─────────────────────────────────────

@@ -36,6 +36,7 @@ Update this table when a lane changes status. Statuses: `planned` → `ready` (s
 | [VS-27](VS-27-ods-start-on-click.md) | Start-on-click launcher page on :3901 for the ODS Applications link (starts Voice Studio, then forwards) | dsh + Operator | ODS change approval (Part B, given 2026-11-08) | verified (Part B PASS 2026-11-08) | — |
 | [VS-28](VS-28-runtime-checkout.md) | Run Voice Studio for ODS from the main checkout, not the builder worktree (build web UI there, re-point the VS-27 logon task) | Operator | Install + real run approval (Part B) | verified (Part B PASS 2026-11-08) | — |
 | [VS-29](VS-29-feature-verification.md) | Verify existing upstream features end to end: dubbing, voice changer, long-form, streaming, pronunciation, Khmer | Operator | Real run approval (given 2026-11-08) | verified (Khmer listening PASS 2026-11-08) | — |
+| [VS-30](VS-30-whisper-timeout-ops.md) | Profile allows 300 s per dub transcription chunk (cold ODS Whisper) + runbook: restart order, dub timing for API callers | dsh + Operator | Real run approval (Part B) | verified (Part A) | — |
 
 Order: VS-00 → VS-01 → VS-02 → (VS-03, VS-04 in either order) → VS-05 → VS-06 → VS-07 → VS-08 → VS-09.
 Phase 4 lanes are independent of each other.
