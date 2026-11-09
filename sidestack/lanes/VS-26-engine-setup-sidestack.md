@@ -4,7 +4,7 @@
 - **Run by:** dsh does Part A (code and offline tests). Part B is optional (see below).
 - **Gate:** none for Part A.
 - **Depends on:** VS-22, VS-23
-- **Status:** verified (Part A; optional Part B not run)
+- **Status:** verified (Part A; Part B PASS, 2026-11-08)
 
 ## Goal
 
@@ -257,6 +257,17 @@ python sidestack/scripts/check_sidestack.py           # expect: OK
 ## Part B (optional)
 
 A live check would need the VoxCPM2 engine to be missing: moving `engines\voxcpm2` aside, then letting "Set up" reinstall about 5 GB. That changes the installed engine, so it is **not run** unless the user asks for it. N1–N5 cover the paths, with the API mocked.
+
+## Part B results (Operator, 2026-11-08)
+
+The user asked for the live check. Voice Studio ran from the worktree with `-AllowNonCommercial` (the profile used for VS-18 Part C); the engine path is the same in both profiles.
+
+1. **Engine missing:** `enginesoxcpm2` was renamed to `voxcpm2.bak-vs26` (5.19 GB, kept) and Voice Studio restarted. The active TTS engine stayed `voxcpm2`, now reported as not installed.
+2. **Notice:** the Design page showed "Text-to-speech is not ready" with a **Set up** button.
+3. **Set up:** one click started `POST /engines/sidecar/voxcpm2/install`. The install finished in about 80 s. No other engine was activated, and no model was downloaded (the VoxCPM2 weights were already cached).
+4. **After:** the active engine is still `voxcpm2` and available, `/setup/status` reports ready, and the notice is gone.
+
+**Verdict:** PASS. The fallback path (N3/N4, never picking a refused engine) was not exercised live: with a one-click engine, "Set up" takes the install branch first, as designed.
 
 ## Out of scope
 

@@ -32,7 +32,7 @@ Update this table when a lane changes status. Statuses: `planned` → `ready` (s
 | [VS-23](VS-23-first-run-default-engine.md) | First-run setup requires the profile's default engine (VoxCPM2 weights + engine) instead of OmniVoice | dsh + Operator | Real run approval (Part B: live read of setup status) | verified | — |
 | [VS-24](VS-24-first-run-screen.md) | First-run screen: packs lead with the required TTS model and skip refused models; install button for the default engine | dsh + Operator | Real run approval (Part B: rebuild web UI, live look) | verified | — |
 | [VS-25](VS-25-recommendations-commercial-only.md) | Commercial-only mode leaves refused picks out of `/setup/recommendations` | dsh + Operator | Real run approval (Part B: one live read) | verified | — |
-| [VS-26](VS-26-engine-setup-sidestack.md) | "Set up" reinstalls a one-click engine (VoxCPM2) and never falls back to a refused engine | dsh | — (Part B optional) | verified (Part B not run) | — |
+| [VS-26](VS-26-engine-setup-sidestack.md) | "Set up" reinstalls a one-click engine (VoxCPM2) and never falls back to a refused engine | dsh + Operator | — (Part B optional) | verified (Part B PASS 2026-11-08) | — |
 
 Order: VS-00 → VS-01 → VS-02 → (VS-03, VS-04 in either order) → VS-05 → VS-06 → VS-07 → VS-08 → VS-09.
 Phase 4 lanes are independent of each other.
