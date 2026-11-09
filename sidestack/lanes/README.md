@@ -39,7 +39,7 @@ Phase 4 lanes are independent of each other.
 
 ## Goal: 100% (set 2026-11-08)
 
-"100%" means every item below is done. Decisions from 2026-11-08: VS-11 and VS-13 are dropped. VS-18 Part C and VS-26 Part B stay optional. VS-10 stays parked (Meetings work).
+"100%" means every item below is done. **Reached 2026-11-08.** Decisions from 2026-11-08: VS-11 and VS-13 are dropped. VS-18 Part C and VS-26 Part B stay optional. VS-10 stays parked (Meetings work).
 
 | # | Item | Done when |
 |---|---|---|
@@ -47,6 +47,6 @@ Phase 4 lanes are independent of each other.
 | G2 | Commercial-only mode on the remaining engine choices outside Settings | **done, audit only (2026-11-08):** nothing left to change. The Dub page's only engine switch picks a commercial Faster-Whisper model. Every "Set up" goes through the engine notice (VS-26). The dictation, translation and diarisation lists draw their Download/Select through `ModelActions` (VS-22). Translation engine installs are pip packages, not models (VS-21, out of scope). |
 | G3 | Recommendations rationale text in the SideStack profile | **done, audit only (2026-11-08):** no change needed. The desktop and web UI never display `rationale`: only `shared/api/setup.ts` types it, and `SystemRecommendations` is exported but not rendered. Only the mobile app reads it, and SideStack does not use the mobile app. |
 | G4 | Final regression: full backend and frontend suites on the final tree, no new failing ids against the baseline | **done (2026-11-08, tree at VS-26):** backend `-n 8`: 13,061 passed, 93 failed, 20 errors, with every failing id in the baseline and none new. Frontend `bun run test`: 396 files / 2,852 passed (12 skipped) and 339 files / 3,091 passed, 0 failed. |
-| G5 | Clean history: squash the local commits into reviewed commits with no private data, then force-push `sidestack/foundation-001` | the push is approved by the user at push time and done |
+| G5 | Clean history: squash the local commits into reviewed commits with no private data, then force-push `sidestack/foundation-001` | **done (2026-11-08, approved by the user):** one commit on upstream 6bb3fbc5e. It has the same tree as the tested branch and no Windows username, and it replaced 13936657d with a force-push with lease. The step-by-step history is kept in a local-only backup branch. |
 
 Recurring, not part of 100%: monthly upstream sync (D5, next about 2026-12-06).
