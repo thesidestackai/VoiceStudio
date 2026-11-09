@@ -4,7 +4,7 @@
 - **Run by:** dsh does Part A (profile, test, runbook). The Operator does Part B (live cold-Whisper check).
 - **Gate:** none for Part A. Part B needs **real run approval**: restart Voice Studio, then one dub transcription after ODS Whisper has been idle for more than 5 minutes. ODS is not stopped or changed.
 - **Depends on:** VS-29
-- **Status:** verified (Part A)
+- **Status:** verified (Part B PASS, 2026-11-08)
 
 ## Goal
 
@@ -139,3 +139,22 @@ NOT DONE / UNSURE: none (Part B left to the Operator; no mutation checks run)
   - line deleted → L8 fails.
 - **Private data:** none in the diff.
 - **Next:** Part B, the live cold-Whisper check, needs real run approval.
+
+## Part B results (Operator, 2026-11-08)
+
+The user approved the commit and the live check. ODS was not stopped or changed.
+
+1. **Restart:**
+   - The main checkout's dry-run plan shows `OMNIVOICE_TRANSCRIBE_CHUNK_TIMEOUT_S=300`.
+   - Voice Studio was stopped and started again from the main checkout with the committed profile.
+2. **Cold Whisper:** ODS Whisper's log shows its model unloaded at 05:26:52 UTC, 39 minutes before the check. ODS's LLM was loaded, with 6.2 GB of GPU memory free.
+3. **Dub transcription:**
+   - A new upload of the synthetic clip finished prep in 2.0 s (Demucs cached).
+   - `transcribe-stream` then returned `final` in 52.3 s: 2 segments, the right text, no `transcription_timeout`.
+   - Whisper reloaded its model and transcribed in 14.9 s this time, against 103 s in VS-29.
+
+**Verdict:** PASS. The cold path works with the new profile.
+
+**Note:** this reload was fast, so the run did not get near the old 120 s limit. It does not prove a slow reload would now pass, only that nothing regressed and that the setting is in the live profile.
+
+VS-29's 103 s reload happened while ODS's LLM held most of the GPU, as now. A reload with the LLM stopped took 3.4 s. Reload time varies, and 300 s leaves room for the slow case measured in VS-29.
