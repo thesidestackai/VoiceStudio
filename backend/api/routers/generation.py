@@ -1999,6 +1999,14 @@ async def generate_speech(
     except Exception:
         pass
 
+    # SideStack fork (VS-06): refuse a TTS load that would not fit beside ODS.
+    # Runs after the single-engine eviction above, so only ODS and this
+    # engine count. Opt-in via SIDESTACK_VRAM_ADMISSION; a no-op upstream.
+    from sidestack_fork.admission import tts_admission_error
+    _admission = tts_admission_error(engine_id, backend_cls)
+    if _admission:
+        raise HTTPException(status_code=503, detail=_admission)
+
     # VRAM eviction runs in get_model()'s warm-return path now, so every
     # native TTS generate (this route, WS TTS, dub, batch, audiobook) is
     # covered.

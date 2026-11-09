@@ -168,6 +168,13 @@ _PROVIDERS: tuple[Provider, ...] = (
              key_envs=("SILICONFLOW_API_KEY",), base_url_env="SILICONFLOW_BASE_URL",
              model_env="SILICONFLOW_MODEL", signup_url="https://siliconflow.com",
              notes="Qwen/DeepSeek and more. Strong for CJK."),
+    # SideStack fork: ODS local model relay (llama.cpp behind ODS model-router).
+    # Keyed, so not ``local``; the key travels only over loopback/HTTPS per
+    # credential_transport_error.
+    Provider("ods", "ODS (SideStack local)", "http://127.0.0.1:4007/v1", "ods/current",
+             key_envs=("ODS_LOCAL_MODEL_RELAY_KEY",), base_url_env="ODS_BASE_URL",
+             model_env="ODS_MODEL",
+             notes="SideStack ODS through the local model relay. Set ODS_LOCAL_MODEL_RELAY_KEY."),
     Provider("ollama", "Ollama (local)", "http://localhost:11434/v1",
              "llama3.1", local=True, key_envs=("OLLAMA_API_KEY",),
              base_url_env="OLLAMA_BASE_URL", model_env="OLLAMA_MODEL",

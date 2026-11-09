@@ -501,6 +501,9 @@ def list_models():
 
     out = []
     host_tags = set(platform_tags)
+    # SideStack fork (VS-22): each row says why commercial-only mode refuses it, so
+    # the UI offers no download. It checks what the install route checks (VS-21).
+    from sidestack_fork.licensing import refusal, refusal_text
     for m in KNOWN_MODELS:
         cached = cached_by_repo.get(m["repo_id"])
         if cached is not None and shares_repo(m):
@@ -531,6 +534,9 @@ def list_models():
             "curated": _model_curated(m, host_tags),
             "license_info": _model_license_info(key),
             "license_acceptance": _model_licence_acceptance(key),
+            "commercial_only_refusal": refusal_text(
+                refusal([key, *(d["repo_id"] for d in m.get("dependencies") or ())])
+            ),
         })
     response = {
         "target": "local",
@@ -586,6 +592,13 @@ def recommendations():
     curated = [
         m for m in KNOWN_MODELS
         if _model_curated(m, tags) and _model_supported(m)
+    ]
+    # SideStack fork (VS-25): commercial-only mode leaves out what the install
+    # route refuses (VS-21), so no recommendation leads to a refused download.
+    from sidestack_fork.licensing import refusal
+    curated = [
+        m for m in curated
+        if refusal([model_key(m), *(d["repo_id"] for d in m.get("dependencies") or ())]) is None
     ]
 
     if not (is_mac_arm or has_cuda or has_rocm):

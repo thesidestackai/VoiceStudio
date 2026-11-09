@@ -296,6 +296,11 @@ def revoke(repo_id: str) -> dict:
 
 def ensure_accepted(repo_ids: Iterable[str]) -> None:
     """Raise ``ModelLicenceNotAccepted`` listing every unaccepted gated model."""
+    # SideStack fork (VS-18): commercial-only mode refuses every model whose
+    # licence category is not "commercial", even an accepted one.
+    repo_ids = list(repo_ids)
+    from sidestack_fork.licensing import ensure_commercial_only
+    ensure_commercial_only(repo_ids)
     missing = []
     for repo_id in dict.fromkeys(r for r in repo_ids if r):
         state = status(repo_id)

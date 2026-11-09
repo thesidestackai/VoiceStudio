@@ -103,6 +103,8 @@ export interface EngineBackend {
   local_install_required?: boolean;
   license_required?: boolean;
   license_accepted?: boolean;
+  /** SideStack fork (VS-22): why commercial-only mode refuses this engine, or null. */
+  commercial_only_refusal?: string | null;
   effective_device?: string;
   routing_status?: string;
   routing_reason?: string | null;

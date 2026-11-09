@@ -1,0 +1,5 @@
+# Staged lane files, harness run notes, local reports. May reference private paths.
+work/
+# Never commit a filled-in env profile.
+config/*.env
+!config/*.env.example

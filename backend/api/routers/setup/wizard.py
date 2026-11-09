@@ -86,6 +86,10 @@ def setup_status():
         for model in required_models()
         if not is_cached(model["repo_id"])
     ]
+    # SideStack fork (VS-23): the profile's default engine must be installed too,
+    # not only its weights.
+    from sidestack_fork.defaults import missing_default_engine
+    missing += missing_default_engine()
     cache = hf_cache_dir()
     free_gb = _disk_free_gb(cache)
     return {

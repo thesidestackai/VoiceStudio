@@ -36,12 +36,20 @@ export function resolvePerformanceModelPack(
   tier: PerformanceTier,
 ): PerformanceModelPack {
   const byRepo = new Map(models.map((model) => [model.repo_id, model]));
-  const selected = performancePackRepos[tier]
+  // SideStack fork (VS-24): lead with the catalogue's required TTS model (the
+  // profile's default engine, VS-23) and skip what commercial-only mode refuses.
+  const required = models
+    .filter((model) => model.required && model.role.toLowerCase() === 'tts')
+    .map((model) => model.repo_id);
+  const selected = [...new Set([...required, ...performancePackRepos[tier]])]
     .map((repoId) => {
       const accelerated = byRepo.get(acceleratedVariants[repoId] ?? '');
       return accelerated?.supported ? accelerated : byRepo.get(repoId);
     })
-    .filter((model): model is CatalogueModel => Boolean(model?.supported));
+    .filter(
+      (model): model is CatalogueModel =>
+        Boolean(model?.supported) && !model?.commercial_only_refusal,
+    );
   const missing = selected.filter((model) => !model.installed);
   return {
     tier,

@@ -4094,6 +4094,16 @@ def _select_capture_asr_backend(*, skip_sherpa: bool) -> ASRBackend:
                     "falling back to Whisper capture engine", sherpa_id,
                 )
 
+        # SideStack fork (VS-14): dictation through the configured
+        # OpenAI-compatible ASR server (ODS Whisper) instead of a local
+        # Whisper. An explicit sherpa selection above still wins.
+        from sidestack_fork.dictation import CAPTURE_KEY, remote_capture_active
+        if remote_capture_active():
+            if _capture_backend is None or _capture_backend_key != CAPTURE_KEY:
+                _capture_backend = OpenAICompatASRBackend()
+                _capture_backend_key = CAPTURE_KEY
+            return _capture_backend
+
         # Prefer an already-installed Parakeet TDT v3 on Apple Silicon (when
         # the language gate allows it — see _capture_prefers_parakeet). Gated
         # on the weights being on disk so this NEVER triggers a download —
@@ -4443,6 +4453,11 @@ def asr_model_missing_error(*, purpose: str = "transcribe",
                                     purpose, spec.repo_id,
                                 ),
                             }
+            # SideStack fork (VS-14): nothing to download when dictation uses
+            # the ASR server (an explicit sherpa selection was handled above).
+            from sidestack_fork.dictation import remote_capture_active
+            if remote_capture_active():
+                return None
             repo = _capture_whisper_repo()
         else:
             repo = _offline_asr_repo(backend_id)

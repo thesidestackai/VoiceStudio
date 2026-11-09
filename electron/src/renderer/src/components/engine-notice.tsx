@@ -25,6 +25,10 @@ interface ModelRecommendations {
   models: RecommendedModel[];
 }
 
+// SideStack fork (VS-26): how long "Set up" waits for a one-click engine install.
+const ENGINE_INSTALL_POLL_MS = 2000;
+const ENGINE_INSTALL_POLLS = 900;
+
 export type EngineSetup = ReturnType<typeof useEngineSetup>;
 
 /**
@@ -68,7 +72,11 @@ export function useEngineSetup(operation = 'tts') {
         return true;
       }
       const available = engines.tts.backends.filter(
-        (backend) => backend.available && backend.routing_status !== 'unavailable',
+        (backend) =>
+          backend.available &&
+          backend.routing_status !== 'unavailable' &&
+          // SideStack fork (VS-26): never pick an engine commercial-only mode refuses.
+          !backend.commercial_only_refusal,
       );
       const candidate = available.find((backend) => backend.id === 'omnivoice') ?? available[0];
       if (!candidate) return false;
@@ -105,6 +113,31 @@ export function useEngineSetup(operation = 'tts') {
     if ((await install.start(repo)) === 'started')
       toast.success(t('models.started_downloading', { count: 1 }));
   };
+  // SideStack fork (VS-26): reinstall an engine that one click installs (the
+  // profile's VoxCPM2) and wait for it, instead of switching to another engine.
+  const installEngine = async (id: string) => {
+    const path = `/engines/sidecar/${encodeURIComponent(id)}/install`;
+    await apiJson(path, { method: 'POST' });
+    toast.success(t('modelMaintenance.installing'));
+    for (let poll = 0; poll < ENGINE_INSTALL_POLLS; poll += 1) {
+      const status = await apiJson<{
+        installed: boolean;
+        job: null | { state: string; error?: string | null };
+      }>(`${path}/status`);
+      if (status.installed) {
+        await refreshReadiness();
+        return;
+      }
+      if (status.job?.state !== 'running') {
+        repair(
+          `The ${id} engine install stopped: ${status.job?.error || status.job?.state || 'no job'}.`,
+        );
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, ENGINE_INSTALL_POLL_MS));
+    }
+    repair(`The ${id} engine install did not finish in time.`);
+  };
   const fix = async () => {
     setFixing(true);
     try {
@@ -122,6 +155,16 @@ export function useEngineSetup(operation = 'tts') {
           await startInstall(selectedModel);
           return;
         }
+      }
+      // SideStack fork (VS-26): see installEngine.
+      if (
+        active &&
+        !active.available &&
+        active.one_click_install &&
+        !active.commercial_only_refusal
+      ) {
+        await installEngine(active.id);
+        return;
       }
       const recommendation = await apiJson<ModelRecommendations>('/setup/recommendations');
       const missing = recommendation.models.find(

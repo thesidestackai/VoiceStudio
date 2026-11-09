@@ -87,14 +87,19 @@ function engineItem(ctx: Context, engine: EngineBackend): FamilyItem {
   const linked = modelsForEngine(engine.id, ctx.models, engine.curated_models);
   const single = linked.length === 1 ? linked[0] : undefined;
   const licenseId = licensedEngine(engine.id, engine.license_required, engine.license_accepted);
-  const engineSelect = engine.available ? (
+  // SideStack fork (VS-22): commercial-only mode refuses this engine outright.
+  const refusal = engine.commercial_only_refusal ?? undefined;
+  const usable = engine.available && !refusal;
+  // No setup either: the server refuses that install too (VS-21).
+  const noSetup = engine.available || Boolean(refusal);
+  const engineSelect = usable ? (
     <SelectButton
       active={active}
       disabled={select.busy}
       onSelect={() => void select.select(engine.id)}
     />
   ) : null;
-  const setup: ReactNode = engine.available ? null : licenseId ? (
+  const setup: ReactNode = noSetup ? null : licenseId ? (
     <EngineLicense id={licenseId} name={engine.display_name} />
   ) : engine.one_click_install ? (
     <EngineInstall id={engine.id} />
@@ -117,7 +122,7 @@ function engineItem(ctx: Context, engine: EngineBackend): FamilyItem {
       docsUrl={engine.docs_url}
       tools={
         <>
-          {engine.id === GGUF_ENGINE && engine.available && <GgufQuantPicker />}
+          {engine.id === GGUF_ENGINE && usable && <GgufQuantPicker />}
           <EngineHealth
             id={engine.id}
             available={engine.available}
@@ -157,7 +162,7 @@ function engineItem(ctx: Context, engine: EngineBackend): FamilyItem {
     key: 'engine:' + engine.id,
     anchorId: 'engine-' + engine.id,
     name: engine.display_name,
-    summary: engineSummary(ctx, engine, active),
+    summary: refusal ?? engineSummary(ctx, engine, active),
     badges: (
       <>
         {active && <ActiveBadge />}
@@ -170,8 +175,11 @@ function engineItem(ctx: Context, engine: EngineBackend): FamilyItem {
             acceptance={single.license_acceptance}
           />
         )}
-        {!engine.available && (
-          <StatusBadge tone="muted" title={engineUnavailableReason(engine.reason, t) || undefined}>
+        {(!engine.available || refusal) && (
+          <StatusBadge
+            tone="muted"
+            title={refusal ?? (engineUnavailableReason(engine.reason, t) || undefined)}
+          >
             {t('modelSettings.unavailable')}
           </StatusBadge>
         )}
@@ -227,15 +235,16 @@ function engineItem(ctx: Context, engine: EngineBackend): FamilyItem {
     childSearch: linked.flatMap(modelSearchText),
     rank: {
       active,
-      ready: engine.available,
+      ready: usable,
       recommended: linked.some((model) => model.curated || model.required),
     },
     folded:
-      !engine.available &&
-      !engine.one_click_install &&
-      !licenseId &&
-      linked.length > 0 &&
-      linked.every((model) => model.supported === false),
+      (Boolean(refusal) && !active) ||
+      (!engine.available &&
+        !engine.one_click_install &&
+        !licenseId &&
+        linked.length > 0 &&
+        linked.every((model) => model.supported === false)),
   };
 }
 

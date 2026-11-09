@@ -29,6 +29,8 @@ export interface CatalogueModel {
   /** Versioned disclosure; absence is unverified, never a permission grant. */
   license_info?: ModelLicenseInfo;
   license_acceptance?: ModelLicenceAcceptance;
+  /** SideStack fork (VS-22): why commercial-only mode refuses this entry, or null. */
+  commercial_only_refusal?: string | null;
 }
 
 export interface ModelCatalogueResponse {

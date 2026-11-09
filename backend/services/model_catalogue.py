@@ -59,6 +59,10 @@ def shares_repo(model: dict, models: "list[dict] | None" = None) -> bool:
 
 
 KNOWN_MODELS = _load_models_from_yaml()
+# SideStack fork (VS-23): with SIDESTACK_DEFAULT_TTS_BACKEND set, the default
+# engine's weights are the required first-run model instead of OmniVoice.
+from sidestack_fork.defaults import apply_required_default  # noqa: E402
+apply_required_default(KNOWN_MODELS)
 
 
 def catalogue_entry(key: str, models: "list[dict] | None" = None) -> "dict | None":

@@ -4558,7 +4558,10 @@ def active_backend_id() -> str:
     # Env var > persisted UI choice > default. Env wins so power-users can
     # pin a backend without the Settings picker silently undoing it.
     from core import prefs
-    return prefs.resolve("tts_backend", env="OMNIVOICE_TTS_BACKEND", default="omnivoice")
+    # SideStack fork (VS-19): the SideStack profile names the default engine.
+    from sidestack_fork.defaults import default_tts_backend
+    return prefs.resolve("tts_backend", env="OMNIVOICE_TTS_BACKEND",
+                         default=default_tts_backend("omnivoice"))
 
 
 # Cached active backend instance + its id (MM2-01). Without this, every call

@@ -13,6 +13,7 @@ import { SystemPreflight } from '@/features/settings/system-preflight';
 import { PermissionsSettings } from '@/features/settings/permissions-settings';
 import { SetupMediaEngine } from '@/features/settings/media-tools';
 import { ModelSettings } from '@/features/settings/model-settings';
+import { EngineInstall } from '@/features/settings/engine-install';
 import { modelFamilies, type ModelFamily } from '@/features/settings/model-family';
 import { MirrorSettings } from '@/features/settings/mirror-settings';
 import { PrivacySettings } from '@/features/settings/privacy-settings';
@@ -212,6 +213,16 @@ export function SetupGate({ children }: { children: ReactNode }) {
                       {status.data?.missing?.map((model) => model.label).join(', ')}
                     </p>
                   )}
+                  {/* SideStack fork (VS-24): an "engine:<id>" gap (VS-23) is an engine
+                      package, so offer its install here, not only in Advanced. */}
+                  {status.data?.missing
+                    ?.filter((model) => (model.repo_id || '').startsWith('engine:'))
+                    .map((model) => (
+                      <EngineInstall
+                        key={model.repo_id}
+                        id={model.repo_id.slice('engine:'.length)}
+                      />
+                    ))}
                 </>
               )}
               {step < 2 &&

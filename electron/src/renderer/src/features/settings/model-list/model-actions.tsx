@@ -87,6 +87,8 @@ export function ModelActions({
   const { t } = useTranslation();
   const resident = maintenance ? ops.residentFor(model) : undefined;
   const busy = Boolean(ops.pending);
+  // SideStack fork (VS-22): commercial-only mode refuses this entry's download and use.
+  const refusal = model.commercial_only_refusal ?? undefined;
   return (
     <>
       {showSize && <ModelSize model={model} />}
@@ -132,7 +134,7 @@ export function ModelActions({
               {t('modelMaintenance.unload')}
             </Button>
           )}
-          {select}
+          {!refusal && select}
           {maintenance && (
             <>
               <Button
@@ -162,7 +164,8 @@ export function ModelActions({
           <Button
             size="sm"
             variant="outline"
-            disabled={busy || !model.supported}
+            disabled={busy || !model.supported || Boolean(refusal)}
+            title={refusal}
             onClick={() => void ops.install(model.repo_id)}
           >
             <WrenchIcon />
@@ -174,11 +177,14 @@ export function ModelActions({
         <Button
           size="sm"
           variant="outline"
-          disabled={busy || !model.supported}
+          disabled={busy || !model.supported || Boolean(refusal)}
+          title={refusal}
           onClick={() => void ops.install(model.repo_id)}
         >
           <DownloadIcon />
-          {t(model.supported ? 'modelMaintenance.download' : 'modelSettings.unavailable')}
+          {t(
+            model.supported && !refusal ? 'modelMaintenance.download' : 'modelSettings.unavailable',
+          )}
         </Button>
       )}
     </>

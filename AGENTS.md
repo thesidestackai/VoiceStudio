@@ -1,3 +1,7 @@
+> **SideStack fork:** agents working on SideStack lanes read
+> [`sidestack/AGENTS-SIDESTACK.md`](sidestack/AGENTS-SIDESTACK.md) first. For that work it
+> overrides the rules below where they conflict.
+
 ## Active desktop: Electron only
 
 Electron (`electron/`) is the only desktop and web UI. The Tauri shell and legacy

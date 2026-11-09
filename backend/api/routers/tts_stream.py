@@ -355,6 +355,14 @@ async def ws_tts(websocket: WebSocket):
                     log_if_low(f"TTS stream load ({engine_id or 'active engine'})")
                 except Exception:
                     pass
+
+                # SideStack fork (VS-06): GPU admission gate before any load.
+                # The default path loads the core inside _resolve_stream_backend.
+                from sidestack_fork.admission import tts_admission_error
+                _admission = tts_admission_error(engine_id)
+                if _admission:
+                    await websocket.send_json({"type": "error", "detail": _admission})
+                    continue
                 from services.tts_backend import engine_in_use
 
                 backend = await _resolve_stream_backend(engine_id)

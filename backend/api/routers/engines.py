@@ -82,6 +82,11 @@ def _family_payload(family: str, module):
             if instance is not None and getattr(tts_backend, "_active_instance_id", None) == active:
                 model = instance.model_identity()
     backends = public_backends(module.list_backends())
+    # SideStack fork (VS-22): engines commercial-only mode refuses outright, so the
+    # UI offers no Select or setup for them.
+    from sidestack_fork.licensing import engine_refusal, refusal_text
+    for backend in backends:
+        backend["commercial_only_refusal"] = refusal_text(engine_refusal(backend.get("id") or ""))
     if family == "tts":
         from services import settings_store
 
@@ -506,6 +511,9 @@ def select_omnivoice_gguf_quant(req: GGUFQuantRequest):
 
 @router.post("/engines/omnivoice-gguf/quants/download", dependencies=[Depends(require_admin)])
 def download_omnivoice_gguf_quant(req: GGUFQuantRequest):
+    # SideStack fork (VS-21): commercial-only mode refuses the download too.
+    from sidestack_fork.licensing import ensure_engine_commercial_only
+    ensure_engine_commercial_only("omnivoice-gguf")
     from api.routers.setup.models import disk_space_error
     from engines.omnivoice_gguf import quants
 
@@ -582,6 +590,9 @@ def install_sidecar_engine(engine_id: str):
     404 for engines that have no sidecar installer — the response names the
     translation-engine route so a mis-aimed client can self-correct.
     """
+    # SideStack fork (VS-21): commercial-only mode refuses the install too.
+    from sidestack_fork.licensing import ensure_engine_commercial_only
+    ensure_engine_commercial_only(engine_id)
     from services import sidecar_install
     try:
         return sidecar_install.start_install(engine_id)
@@ -996,6 +1007,12 @@ def select_engine(req: SelectEngineRequest):
     if req.backend_id not in available:
         raise HTTPException(400, f"Unknown {req.family} backend: {req.backend_id!r}")
     entry = available[req.backend_id]
+    # SideStack fork (VS-22): commercial-only mode refuses to save an engine it would
+    # refuse to load (403 commercial_only_mode).
+    from sidestack_fork.licensing import engine_refusal
+    refused = engine_refusal(req.backend_id)
+    if refused is not None:
+        raise refused
     if not entry["available"]:
         reason = entry.get("reason") or "unavailable"
         raise HTTPException(400, f"Backend {req.backend_id} not ready: {reason}")

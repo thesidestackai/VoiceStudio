@@ -649,6 +649,12 @@ def _audio_chunks(audio: bytes):
 @router.post("/audio/speech")
 async def create_speech(req: SpeechRequest):
     """Generate audio from text. Compatible with OpenAI's POST /v1/audio/speech."""
+    # SideStack fork (VS-09): the VS-06 GPU admission gate on the OpenAI speech
+    # route too. OpenAI model ids ("tts-1") mean the active engine.
+    from sidestack_fork.admission import tts_admission_error
+    _admission = tts_admission_error(None if is_openai_tts_model(req.model) else req.model)
+    if _admission:
+        raise OpenAIError(503, _admission, param="model", code="insufficient_gpu_memory")
     from services.model_acceptance import ModelLicenceNotAccepted
     try:
         backend = _resolve_engine(req.model)

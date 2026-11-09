@@ -143,7 +143,7 @@ export function modelFamilyItem({
       recommended: Boolean(model.curated || model.required),
       ...rank,
     },
-    folded: model.supported === false,
+    folded: model.supported === false || Boolean(model.commercial_only_refusal),
     installOnly: !select,
   };
 }

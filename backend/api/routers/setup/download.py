@@ -611,6 +611,11 @@ async def install_model(req: InstallModelRequest):
             status_code=400,
             detail="Remote model installation is unavailable; target must be 'local'.",
         )
+    # SideStack fork (VS-21): commercial-only mode refuses the download too. The
+    # catalogue key (req.repo_id) is the licence record: a package such as
+    # dots-tts has its own row inside a non-commercial Hub repo.
+    from sidestack_fork.licensing import ensure_commercial_only
+    ensure_commercial_only([req.repo_id, *(d["repo_id"] for d in model_spec.get("dependencies") or ())])
     # Cooldown guard — don't retry if the same model just failed.
     import time as _time_check
     _sweep_cooldowns(_time_check.time())  # bound the dict (MM2-06)
