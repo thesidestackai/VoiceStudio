@@ -11,13 +11,16 @@ service:
   aliases: []
   container_name: ""
   # Runs natively on Windows (Start-VoiceStudio-ODS.ps1, lane VS-07), bound to 127.0.0.1:3900.
+  # ODS links the start-on-click launcher page (voice_studio_launcher.py, lane VS-27) on
+  # 127.0.0.1:3901: it forwards to Voice Studio when it is up, or starts it, then forwards.
   # The ODS dashboard container reaches Windows loopback through host.docker.internal.
   # Voice Studio uses ODS through the local model relay (:4007) and ODS Whisper (:9000).
   default_host: host.docker.internal
-  port: 3900
-  # Public, unauthenticated liveness route of the VoiceStudio backend.
+  port: 3901
+  # The launcher page's open liveness route. The page and its API answer only for
+  # Host localhost/127.0.0.1:3901.
   health: /health
-  external_port_default: 3900
+  external_port_default: 3901
   ui_path: /
   # Not Docker and not host-systemd: ODS lists and health-checks it, never starts or stops it.
   type: windows-host

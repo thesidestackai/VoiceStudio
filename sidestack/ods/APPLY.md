@@ -45,3 +45,22 @@ Move `extensions/services/sidestack-voice-studio/` out to the ODS backups folder
 - Applications appears in the ODS **Dashboard** view only, not the Portal view.
 - ODS builds the link from the hostname the ODS page was opened on. Open ODS on `localhost` so
   the link matches the loopback bind.
+
+## Start-on-click launcher (lane VS-27)
+
+ODS links `http://localhost:3901/`, the launcher page (`sidestack/scripts/voice_studio_launcher.py`), instead of Voice Studio itself.
+- When Voice Studio is up, the page forwards to `http://localhost:3900/`.
+- Otherwise it runs `Start-VoiceStudio-ODS.ps1` (the default, commercial-only profile) and forwards once `/health` answers.
+- ODS still never starts or stops anything itself. Its health check now shows the page, not Voice Studio.
+
+**Needs the user's approval.** To update an installed entry:
+
+1. Back up the installed `manifest.yaml` to the ODS backups folder, and record its SHA-256.
+2. Stage and install the new manifest as in step 3 above. `sha256sum` must equal the repo copy's hash.
+3. Run `docker restart ods-dashboard-api`, then check it as in step 4.
+4. Start the page at logon: create a per-user scheduled task, with no elevation, that runs `pythonw.exe -I <checkout>\sidestack\scripts\voice_studio_launcher.py` at logon. Start it once by hand with `Start-ScheduledTask`.
+5. Verify:
+   - With Voice Studio stopped, the Applications entry shows healthy, because the page is up. Clicking it shows "Starting Voice Studio…", then opens Voice Studio.
+   - With Voice Studio running, the link opens it directly.
+
+Rollback: restore the backed-up manifest, run `docker restart ods-dashboard-api`, and delete the scheduled task.

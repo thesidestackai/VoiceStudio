@@ -10,7 +10,8 @@ The optional ODS Docker variant (VS-13) is described in §7.
 | Voice Studio backend + web UI | Windows host (uv venv, CUDA torch) | `127.0.0.1:3900` | FastAPI backend. Serves `frontend/dist`, the `/v1` OpenAI-compatible speech API and MCP. Runs the TTS engines on the GPU. |
 | ODS local model relay | ODS (Docker in WSL2) | `127.0.0.1:4007/v1` | Authenticated path to ODS model-router → llama-server (Qwen 3.8 27B). Bearer key from the Windows user env `ODS_LOCAL_MODEL_RELAY_KEY`. Model ids `ods/current`, `default`. |
 | ODS Whisper | ODS (Docker) | `127.0.0.1:9000/v1` | OpenAI-compatible transcription (faster-whisper large-v3-turbo; diarization endpoint available). |
-| ODS dashboard | ODS (Docker) | ODS UI | Lists Voice Studio under Applications. Health-checks it from the container via `host.docker.internal:3900`. |
+| Launcher page | Windows host (`pythonw`, started at logon) | `127.0.0.1:3901` | `sidestack/scripts/voice_studio_launcher.py` (VS-27). Forwards to Voice Studio when it is up; otherwise runs `Start-VoiceStudio-ODS.ps1`, then forwards. |
+| ODS dashboard | ODS (Docker) | ODS UI | Lists Voice Studio under Applications. Links and health-checks the launcher page from the container via `host.docker.internal:3901`. |
 | DeepSeek Harness | Windows host | `localhost:3080` | Build agent for lanes (ODS provider through the same relay). Not used at runtime. |
 
 ## 2. Request paths

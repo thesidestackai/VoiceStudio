@@ -6,7 +6,8 @@ Checks:
   2. every lane spec (lanes/VS-*.md) has the metadata lines and sections from LANE-TEMPLATE.md
   3. every lane linked from lanes/README.md exists, and every lane file is in the tracker
   4. relative Markdown links inside sidestack/ resolve
-  5. ods/manifest.yaml has the fields ODS needs, and its port matches config/ods.env.example
+  5. ods/manifest.yaml has the fields ODS needs; its port is the launcher page's (VS-27), and the
+     launcher forwards to OMNIVOICE_PORT from config/ods.env.example
   6. config/ods.env.example is KEY=VALUE only (no inline comments) and carries no secret values
   7. no secret-looking strings in any file under sidestack/ (work/ is skipped: gitignored)
 
@@ -35,6 +36,7 @@ REQUIRED_FILES = [
     "ods/APPLY.md",
     "scripts/Test-VoiceStudioOds.ps1",
     "scripts/check_sidestack.py",
+    "scripts/voice_studio_launcher.py",
 ]
 
 LANE_META = ("**Phase:**", "**Run by:**", "**Gate:**", "**Status:**")
@@ -165,8 +167,14 @@ def check_env(problems: list[str], port: int | None) -> None:
             problems.append(f"config/ods.env.example: {url_key} is plain HTTP off loopback")
     if values.get("OMNIVOICE_BIND_HOST") not in (None, "127.0.0.1"):
         problems.append("config/ods.env.example: OMNIVOICE_BIND_HOST must stay 127.0.0.1")
-    if port is not None and values.get("OMNIVOICE_PORT") != str(port):
-        problems.append(f"port mismatch: manifest {port} vs OMNIVOICE_PORT {values.get('OMNIVOICE_PORT')}")
+    # SideStack VS-27: ODS links the launcher page, which forwards to Voice Studio.
+    launcher = (ROOT / "scripts" / "voice_studio_launcher.py").read_text(encoding="utf-8")
+    page = re.search(r"^PORT = (\d+)$", launcher, re.MULTILINE)
+    app = re.search(r'^APP = "http://127\.0\.0\.1:(\d+)"$', launcher, re.MULTILINE)
+    if port is not None and (page is None or int(page.group(1)) != port):
+        problems.append(f"port mismatch: manifest {port} vs launcher page {page and page.group(1)}")
+    if app is None or app.group(1) != values.get("OMNIVOICE_PORT"):
+        problems.append(f"port mismatch: launcher APP {app and app.group(1)} vs OMNIVOICE_PORT {values.get('OMNIVOICE_PORT')}")
 
 
 def check_secrets(problems: list[str]) -> None:
