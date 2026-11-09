@@ -58,9 +58,22 @@ ODS links `http://localhost:3901/`, the launcher page (`sidestack/scripts/voice_
 1. Back up the installed `manifest.yaml` to the ODS backups folder, and record its SHA-256.
 2. Stage and install the new manifest as in step 3 above. `sha256sum` must equal the repo copy's hash.
 3. Run `docker restart ods-dashboard-api`, then check it as in step 4.
-4. Start the page at logon: create a per-user scheduled task, with no elevation, that runs `pythonw.exe -I <checkout>\sidestack\scripts\voice_studio_launcher.py` at logon. Start it once by hand with `Start-ScheduledTask`.
+4. Start the page at logon: create a per-user scheduled task, with no elevation, that runs `pythonw.exe -I <main checkout>\sidestack\scripts\voice_studio_launcher.py` at logon. Start it once by hand with `Start-ScheduledTask`.
 5. Verify:
    - With Voice Studio stopped, the Applications entry shows healthy, because the page is up. Clicking it shows "Starting Voice Studio…", then opens Voice Studio.
    - With Voice Studio running, the link opens it directly.
 
 Rollback: restore the backed-up manifest, run `docker restart ods-dashboard-api`, and delete the scheduled task.
+
+## Runtime checkout (lane VS-28)
+
+The logon task runs the launcher page from the **main checkout** (`sidestack/foundation-001`), not the builder worktree. Voice Studio then starts from the same checkout. The builder worktree may hold half-finished lane work at any time.
+
+After each fast-forward of the main checkout that changes `electron/`, rebuild the web UI there:
+
+```powershell
+bun install --frozen-lockfile   # only when bun.lock changed
+bun run build:web
+```
+
+Restart Voice Studio (`Start-VoiceStudio-ODS.ps1 -Stop`, then click the ODS link) so it serves the new build. Backend changes also need this restart. No rebuild is needed for them.

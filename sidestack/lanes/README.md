@@ -34,6 +34,7 @@ Update this table when a lane changes status. Statuses: `planned` → `ready` (s
 | [VS-25](VS-25-recommendations-commercial-only.md) | Commercial-only mode leaves refused picks out of `/setup/recommendations` | dsh + Operator | Real run approval (Part B: one live read) | verified | — |
 | [VS-26](VS-26-engine-setup-sidestack.md) | "Set up" reinstalls a one-click engine (VoxCPM2) and never falls back to a refused engine | dsh + Operator | — (Part B optional) | verified (Part B PASS 2026-11-08) | — |
 | [VS-27](VS-27-ods-start-on-click.md) | Start-on-click launcher page on :3901 for the ODS Applications link (starts Voice Studio, then forwards) | dsh + Operator | ODS change approval (Part B, given 2026-11-08) | verified (Part B PASS 2026-11-08) | — |
+| [VS-28](VS-28-runtime-checkout.md) | Run Voice Studio for ODS from the main checkout, not the builder worktree (build web UI there, re-point the VS-27 logon task) | Operator | Install + real run approval (Part B) | verified (Part B PASS 2026-11-08) | — |
 
 Order: VS-00 → VS-01 → VS-02 → (VS-03, VS-04 in either order) → VS-05 → VS-06 → VS-07 → VS-08 → VS-09.
 Phase 4 lanes are independent of each other.
